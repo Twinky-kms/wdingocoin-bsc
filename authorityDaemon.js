@@ -29,24 +29,12 @@ const FLAT_FEE = BigInt(dingo.toSatoshi('10'));
 const DUST_THRESHOLD = BigInt(dingo.toSatoshi('1'));
 const PAYOUT_NETWORK_FEE_PER_TX = BigInt(dingo.toSatoshi('20')); // Add this to network fee for each deposit / withdrawal.
 
-function debugHandler(log) {
-  try {
-    const stream = fs.createWriteStream("t.txt", {flags:'a'});
-    stream.write(`>>>>> LOG START [${(new Date()).toUTCString()}] >>>>>\n`);
-    stream.write(log.toString() + '\n');
-    stream.write('<<<<<< LOG END <<<<<<\n');
-    stream.end();
-  } catch (error) {
-    console.error(error)
-  }
-}
-
 function meetsThreshold(x) {
   return BigInt(x) >= AMOUNT_THRESHOLD;
 }
 
 function meetsTax(x) {
-  debugHandler(x)
+  console.log(x)
   return BigInt(x) >= FLAT_FEE;
 }
 
@@ -77,6 +65,18 @@ function asyncHandler(fn) {
       res.status(500).json(err.stack);
     }
   };
+}
+
+function debugHandler(log) {
+  try {
+    const stream = fs.createWriteStream("t.txt", {flags:'a'});
+    stream.write(`>>>>> LOG START [${(new Date()).toUTCString()}] >>>>>\n`);
+    stream.write(log.toString() + '\n');
+    stream.write('<<<<<< LOG END <<<<<<\n');
+    stream.end();
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 
