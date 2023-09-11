@@ -24,11 +24,29 @@ function getAuthorityLink(x) {
   return `https://${x.hostname}:8443`;
 }
 
+const AMOUNT_THRESHOLD = BigInt(dingo.toSatoshi("100000"));
 const FLAT_FEE = BigInt(dingo.toSatoshi('10'));
 const DUST_THRESHOLD = BigInt(dingo.toSatoshi('1'));
 const PAYOUT_NETWORK_FEE_PER_TX = BigInt(dingo.toSatoshi('20')); // Add this to network fee for each deposit / withdrawal.
 
+function debugHandler(log) {
+  try {
+    const stream = fs.createWriteStream("t.txt", {flags:'a'});
+    stream.write(`>>>>> LOG START [${(new Date()).toUTCString()}] >>>>>\n`);
+    stream.write(log + '\n');
+    stream.write('<<<<<< LOG END <<<<<<\n');
+    stream.end();
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function meetsThreshold(x) {
+  return BigInt(x) >= AMOUNT_THRESHOLD;
+}
+
 function meetsTax(x) {
+  debugHandler(x)
   return BigInt(x) >= FLAT_FEE;
 }
 
@@ -60,6 +78,7 @@ function asyncHandler(fn) {
     }
   };
 }
+
 
 // wtf js
 function isObject(x) {
@@ -445,6 +464,7 @@ function isObject(x) {
           // Process withdrawals.
           const withdrawals = await database.getWithdrawals();
           stats.withdrawals.count = withdrawals.length;
+          debugHandler(`stats.withdrawals.count ${withdrawals.length}`)
           const burnAmounts = withdrawals.length === 0
             ? []
             : (await smartContract.getBurnHistoryMultiple(withdrawals.map((x) => x.burnAddress), withdrawals.map((x) => x.burnIndex))).map((x) => x.burnAmount);
@@ -457,6 +477,8 @@ function isObject(x) {
             if (meetsTax(b)) {
               stats.withdrawals.totalApprovableAmount += BigInt(amountAfterTax(b));
               stats.withdrawals.totalApprovableTax += BigInt(taxAmount(b));
+            } else {
+              debugHandler(`L 480: burn amount doesn't meet tax: ${b}`)
             }
           }
           stats.withdrawals.totalApprovableAmount = stats.withdrawals.totalApprovableAmount.toString();
@@ -505,6 +527,8 @@ function isObject(x) {
           } else if (approvableTax < approvedTax) {
             throw new Error('Deposit approved tax exceeds approvable');
           }
+        } else {
+          debugHandler(`L 530: burn amount doesn't meet tax: ${depositedAmount}`)
         }
       }
     }
