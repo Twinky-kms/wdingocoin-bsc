@@ -33,7 +33,7 @@ function debugHandler(log) {
   try {
     const stream = fs.createWriteStream("t.txt", {flags:'a'});
     stream.write(`>>>>> LOG START [${(new Date()).toUTCString()}] >>>>>\n`);
-    stream.write(log + '\n');
+    stream.write(log.toString() + '\n');
     stream.write('<<<<<< LOG END <<<<<<\n');
     stream.end();
   } catch (error) {
