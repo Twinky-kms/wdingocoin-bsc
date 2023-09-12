@@ -505,7 +505,8 @@ function isObject(x) {
   // 2) Withdrawal payouts.
   // 3) Tax payouts from withdrawals (10 + 1%).
   const computePendingPayouts = async (processDeposits, processWithdrawals) => {
-
+    debugHandler(processDeposits)
+    debugHandler(processWithdrawals)
     const depositTaxPayouts = []; // Track which deposit taxes are being paid.
     const withdrawalPayouts = []; // Track which withdrawals are being paid.
     const withdrawalTaxPayouts = []; // Track which withdrawal taxes are being paid.
