@@ -517,6 +517,7 @@ function isObject(x) {
       for (const a of nonEmptyMintDepositAddresses) {
         const depositedAmount = dingo.toSatoshi(deposited[a.depositAddress].amount.toString());
         if (meetsTax(depositedAmount)) {
+          debugHandler("deposited amount L520: "+ depositedAmount)
           const approvedTax = BigInt(a.approvedTax);
           const approvableTax = BigInt(taxAmount(depositedAmount));
           if (approvableTax > approvedTax) {
