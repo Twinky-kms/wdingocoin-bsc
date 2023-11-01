@@ -19,6 +19,7 @@ const got = require('got');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const LOCALHOST = '127.0.0.1';
+const EXTERNAL_SSL = process.env.EXTERNAL_SSL === 'true';
 
 function getAuthorityLink(x) {
   return `https://${x.hostname}:8443`;
@@ -782,6 +783,11 @@ function isObject(x) {
     });
 
   let server = null;
+  app.get(`/healthz`, (req, res) => {
+    console.log('healthz');
+    res.status(200).json({ status: 'ok' });
+  });
+
   app.post('/dingoDoesAHarakiri',
     async (req, res) => {
       const data = req.body;
@@ -799,17 +805,23 @@ function isObject(x) {
     }
   })
 
-  server = https.createServer({
-    key: fs.readFileSync(sslSettings.keyPath),
-    cert: fs.readFileSync(sslSettings.certPath),
-    SNICallback: (domain, cb) => {
-      cb(null, tls.createSecureContext({
-        key: fs.readFileSync(sslSettings.keyPath),
-        cert: fs.readFileSync(sslSettings.certPath),
-      }));
-    }
-  }, app).listen(8443, () => {
-    console.log(`Started on port 8443`);
-  });
+  if (EXTERNAL_SSL){
+    app.listen(8443, () => {
+      console.log(`Started on port 8443 without SSL`);
+    });
+  } else {
+    server = https.createServer({
+      key: fs.readFileSync(sslSettings.keyPath),
+      cert: fs.readFileSync(sslSettings.certPath),
+      SNICallback: (domain, cb) => {
+        cb(null, tls.createSecureContext({
+          key: fs.readFileSync(sslSettings.keyPath),
+          cert: fs.readFileSync(sslSettings.certPath),
+        }));
+      }
+    }, app).listen(8443, () => {
+      console.log(`Started on port 8443 with SSL`);
+    });
+  }
 
 })();
