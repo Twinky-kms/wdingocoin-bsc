@@ -77,6 +77,7 @@ function parseBool(s) {
       }).json();
     return r;
   }
+
   const createTimedAndSignedMessage = async (x) => {
     if (!isObject(x)) {
       throw new Error(`Cannot sign non-object ${JSON.stringify(x)}`);
@@ -86,6 +87,7 @@ function parseBool(s) {
     x.valDingoHash = await dingo.getBlockHash(blockchainInfo.blocks - syncDelayThreshold);
     return smartContract.createSignedMessage(x);
   }
+
   const validateTimedAndSignedMessage = async (x, walletAddress, discard=true) => {
     if (!isObject(x.data)) {
       throw new Error('Data is non-object');
@@ -99,6 +101,7 @@ function parseBool(s) {
     }
     return smartContract.validateSignedMessage(x, walletAddress, discard);
   }
+  
   const validateTimedAndSignedMessageOne = async (x, walletAddresses, discard=true) => {
     if (!isObject(x.data)) {
       throw new Error(`Data is non-object: ${JSON.stringify(x)}`);
@@ -115,7 +118,7 @@ function parseBool(s) {
 
 
   const repl = require('repl').start({ prompt: chalk.bold('wDingocoin > '), eval: eval, writer: (x) => x, ignoreUndefined: true });
-  require('repl.history')(repl, '.cli_history');
+  //require('repl.history')(repl, '.cli_history');
 
   const commandCallbacks = {
     help: help,

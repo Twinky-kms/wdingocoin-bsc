@@ -135,7 +135,7 @@
         "chainId": 80001,
         "contractAddress": "0x9c8f440f22dc43c166e9a6cb5a83dbb8be1d1c33",
         "dingoNetworkChangeAddress": "2N5Cqtp88WmQDxzWpM5fMMo2HNPnQMb6aDq",
-        "dingoNetworkColdAddresses": [""],
+        "dingoNetworkColdAddresses": ["2N5Cqtp88WmQDxzWpM5fMMo2HNPnQMb6aDq"],
         "changeConfirmations": 10,
         "depositConfirmations": 10,
         "payoutCoordinator": 0,
