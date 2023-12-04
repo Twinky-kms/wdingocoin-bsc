@@ -9,7 +9,7 @@ const sort = require('fast-sort').sort;
 
 const NETWORKS = JSON.parse(fs.readFileSync(`settings/networks.json`))
 const BLACKLIST = NETWORKS.blacklistedAddresses
-const TESTNET = true
+const TESTNET = false
 const DINGO_COOKIE_PATH = TESTNET ? '~/.dingocoin/testnet1/.cookie'.replace('~', os.homedir) : '~/.dingocoin/.cookie'.replace('~', os.homedir);
 const DINGO_PORT = 34646;
 
