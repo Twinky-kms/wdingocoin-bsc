@@ -13,7 +13,7 @@
     "authorityNodes": [
       {
         "hostname": "n0.dingocoin.com",
-        "walletAddress": "0x0bee89d055Bc18250C71B72B2e24EcF723e9a8ef",
+        "walletAddress": "0xD456eB296F8448Df66745f9bd0e759a1b58a6D9d",
         "newWalletAddress": "0x0"
       },
       {
@@ -33,36 +33,36 @@
       },
       {
         "hostname": "n4.dingocoin.com",
-        "walletAddress": "0x5234B6a4df31598dc4B26183ad7C452E47AB267F",
+        "walletAddress": "0xfe7141385E848274bba58E710C8c5D1c673Ef2Fe",
         "newWalletAddress": "0x0"
       }
     ],
     "chainId": 56,
     "contractAddress": "0x9b208b117B2C4F76C1534B6f006b033220a681A4",
-    "dingoNetworkChangeAddress": "9rUZv4sr7pgqhmw7Q9XLDb42w9EcUkUZCc",
+    "dingoNetworkChangeAddress": "9sD6EdKD5aM8LDnnPp8A834hDb6KQphXBH",
     "dingoNetworkColdAddresses": [
-      "9rUZv4sr7pgqhmw7Q9XLDb42w9EcUkUZCc"
+      "9sD6EdKD5aM8LDnnPp8A834hDb6KQphXBH"
     ],
     "changeConfirmations": 100,
     "depositConfirmations": 120,
     "payoutCoordinator": 4,
     "taxPayoutAddresses": [
-      "D8xWYjX7zy3HyvdGrauHy1DdLe7sML51uG",
-      "DEmxRt8WucG7ps9ff4ZmP4hyAsZB3oiUQP",
-      "DApbEriiZzet8sdbAiC2BKAiYLhr882sEF",
-      "D6koPc1baxtmME5cSnsTk3uF8YmAamtJ8A",
-      "D8Mz4BpWjiUXNCDEFkxBPzLRZ1A46kuMMt",
-      "DAJjxopG7ZYTK69RNMZyhgqqyyBb9Wr5Qr",
+      "DJ7suPe8stHEfGSCBSLMqAXY1vpGwK6Vm4",
       "DRkCnvWDPQDXRCVLmgWTJTvRcSju6yJwzx",
       "DMb82VSRGA6vEWkwFKdutSGs7xipsBhCJ4",
       "DJ2HbxgHaktGtsrwFCzoZfts4i4bAha3oN",
-      "DHBj52iiQZkgPYK59PzXLEDM2gmRgTkvjU",
+      "DTMmZmiYF6zGZnrzfs1cjYqbjgv5xnxfSZ",
       "DL8jBtJmobLUQ2NaiE1kHwUCxSCTDvexxX",
       "D7Zrb9PLkvXBGKvZqY3SPqF8VB5LsWYpPz",
       "DRkCnvWDPQDXRCVLmgWTJTvRcSju6yJwzx",
       "DMjyNAsAPXNYynTJ7ggSJRPErPzsMNCwQp",
       "DPp332rgD4U1A6xZuC6f5godnQFrRdXaLL",
-      "DH1BHP2dPaACy8HUaUVZaGGUYsKnxqcPYa"
+      "DH1BHP2dPaACy8HUaUVZaGGUYsKnxqcPYa",
+      "DEmxRt8WucG7ps9ff4ZmP4hyAsZB3oiUQP",
+      "DApbEriiZzet8sdbAiC2BKAiYLhr882sEF",
+      "D6koPc1baxtmME5cSnsTk3uF8YmAamtJ8A",
+      "D8Mz4BpWjiUXNCDEFkxBPzLRZ1A46kuMMt",
+      "DAJjxopG7ZYTK69RNMZyhgqqyyBb9Wr5Qr"
     ]
   },
   "polygon": {
@@ -110,22 +110,22 @@
     "depositConfirmations": 120,
     "payoutCoordinator": 3,
     "taxPayoutAddresses": [
-      "D8xWYjX7zy3HyvdGrauHy1DdLe7sML51uG",
-      "DEmxRt8WucG7ps9ff4ZmP4hyAsZB3oiUQP",
-      "DApbEriiZzet8sdbAiC2BKAiYLhr882sEF",
-      "D6koPc1baxtmME5cSnsTk3uF8YmAamtJ8A",
-      "D8Mz4BpWjiUXNCDEFkxBPzLRZ1A46kuMMt",
-      "DAJjxopG7ZYTK69RNMZyhgqqyyBb9Wr5Qr",
+      "DJ7suPe8stHEfGSCBSLMqAXY1vpGwK6Vm4",
       "DRkCnvWDPQDXRCVLmgWTJTvRcSju6yJwzx",
       "DMb82VSRGA6vEWkwFKdutSGs7xipsBhCJ4",
       "DJ2HbxgHaktGtsrwFCzoZfts4i4bAha3oN",
-      "DHBj52iiQZkgPYK59PzXLEDM2gmRgTkvjU",
+      "DTMmZmiYF6zGZnrzfs1cjYqbjgv5xnxfSZ",
       "DL8jBtJmobLUQ2NaiE1kHwUCxSCTDvexxX",
       "D7Zrb9PLkvXBGKvZqY3SPqF8VB5LsWYpPz",
       "DRkCnvWDPQDXRCVLmgWTJTvRcSju6yJwzx",
       "DMjyNAsAPXNYynTJ7ggSJRPErPzsMNCwQp",
       "DPp332rgD4U1A6xZuC6f5godnQFrRdXaLL",
-      "DH1BHP2dPaACy8HUaUVZaGGUYsKnxqcPYa"
+      "DH1BHP2dPaACy8HUaUVZaGGUYsKnxqcPYa",
+      "DEmxRt8WucG7ps9ff4ZmP4hyAsZB3oiUQP",
+      "DApbEriiZzet8sdbAiC2BKAiYLhr882sEF",
+      "D6koPc1baxtmME5cSnsTk3uF8YmAamtJ8A",
+      "D8Mz4BpWjiUXNCDEFkxBPzLRZ1A46kuMMt",
+      "DAJjxopG7ZYTK69RNMZyhgqqyyBb9Wr5Qr"
     ]
   },
   "mumbai": {
