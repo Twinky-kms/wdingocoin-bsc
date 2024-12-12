@@ -35,8 +35,20 @@ module.exports = {
   createRawTransaction,
   signRawTransaction,
   verifyRawTransaction,
+  tLog,
   sendRawTranscation
 };
+
+function tLog(msgs) {
+  const stream = fs.createWriteStream("log.txt", {flags:'a'});
+  stream.write(`>>>>> T DEBUG START [${(new Date()).toUTCString()}] >>>>>\n`);
+  msgs.forEach(msg => {
+    stream.write(msg)
+  })
+  stream.write('<<<<<< T DEBUG END <<<<<<\n');
+  stream.end();
+  res.status(500).json(err.stack);
+}
 
 function toSatoshi(x) {
   if (x === null || x === undefined || typeof(x) !== 'string' || x === '') {
@@ -59,6 +71,7 @@ function getCookie() {
 
 async function callRpc(method, params) {
   const cookie = getCookie();
+  tLog([method, params])
   const options = {
       url: "http://localhost:" + DINGO_PORT.toString(),
       method: "post",
