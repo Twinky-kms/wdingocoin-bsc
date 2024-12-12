@@ -7,7 +7,7 @@ const Web3 = require('web3');
 const os = require("os");
 const sort = require('fast-sort').sort;
 const logger = require('./database/logger');
-const x509 = require('x509');
+const forge = require('node-forge');
 const path = require('path');
 
 // Load network settings
@@ -17,13 +17,28 @@ const NETWORKS = JSON.parse(fs.readFileSync('settings/networks.json'));
 function getNodeIdentity(network) {
     try {
         const certPath = path.join('settings', 'ssl', 'fullchain.pem');
-        const certData = fs.readFileSync(certPath);
-        const cert = x509.parseCert(certData);
+        const certPem = fs.readFileSync(certPath, 'utf8');
+        const cert = forge.pki.certificateFromPem(certPem);
         
         // Get domain from certificate
-        const domain = cert.subject.commonName || 
-                      (cert.altNames && cert.altNames[0]) || 
-                      null;
+        let domain = null;
+        
+        // Try Subject Alternative Names first
+        const altNames = cert.extensions.find(ext => ext.name === 'subjectAltName');
+        if (altNames) {
+            const dnsNames = altNames.altNames.filter(n => n.type === 2); // type 2 is DNS
+            if (dnsNames.length > 0) {
+                domain = dnsNames[0].value;
+            }
+        }
+        
+        // Fallback to Common Name
+        if (!domain) {
+            const commonName = cert.subject.getField('CN');
+            if (commonName) {
+                domain = commonName.value;
+            }
+        }
 
         if (!domain) {
             throw new Error('No domain found in SSL certificate');
