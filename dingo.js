@@ -7,50 +7,26 @@ const Web3 = require('web3');
 const os = require("os");
 const sort = require('fast-sort').sort;
 const logger = require('./database/logger');
-const forge = require('node-forge');
 const path = require('path');
 
 // Load network settings
 const NETWORKS = JSON.parse(fs.readFileSync('settings/networks.json'));
 
-// Get node identity from SSL certificate
+// Get node identity from ssl.json configuration
 function getNodeIdentity(network) {
     try {
-        const certPath = path.join('settings', 'ssl', 'fullchain.pem');
-        const certPem = fs.readFileSync(certPath, 'utf8');
-        const cert = forge.pki.certificateFromPem(certPem);
+        const sslConfig = JSON.parse(fs.readFileSync('settings/ssl.json', 'utf8'));
         
-        // Get domain from certificate
-        let domain = null;
-        
-        // Try Subject Alternative Names first
-        const altNames = cert.extensions.find(ext => ext.name === 'subjectAltName');
-        if (altNames) {
-            const dnsNames = altNames.altNames.filter(n => n.type === 2); // type 2 is DNS
-            if (dnsNames.length > 0) {
-                domain = dnsNames[0].value;
-            }
-        }
-        
-        // Fallback to Common Name
-        if (!domain) {
-            const commonName = cert.subject.getField('CN');
-            if (commonName) {
-                domain = commonName.value;
-            }
-        }
-
-        if (!domain) {
-            throw new Error('No domain found in SSL certificate');
-        }
+        // Extract hostname from certPath
+        // Example path: /etc/letsencrypt/live/n4.dingocoin.org/fullchain.pem
+        const hostname = sslConfig.certPath.split('/').slice(-2)[0];
 
         // Find matching node
         const nodes = NETWORKS[network].authorityNodes;
-        const node = nodes.find(n => n.hostname === domain) || 
-                    nodes.find(n => domain.endsWith(n.hostname));
+        const node = nodes.find(n => n.hostname === hostname);
 
         if (!node) {
-            throw new Error(`No matching node found for domain: ${domain}`);
+            throw new Error(`No matching node found for hostname: ${hostname}`);
         }
 
         return node;
