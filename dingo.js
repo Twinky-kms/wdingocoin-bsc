@@ -6,6 +6,22 @@ const crypto = require('crypto');
 const Web3 = require('web3');
 const os = require("os");
 const sort = require('fast-sort').sort;
+const logger = require('./database/logger');
+
+// Initialize logger with node identity
+const networkSettings = JSON.parse(fs.readFileSync('settings/networks.json'));
+const nodeIndex = process.argv[2] || '0';  // Get node index from command line or default to 0
+const currentNode = networkSettings.bsc.authorityNodes[parseInt(nodeIndex)];
+logger.setNodeId(`${currentNode.hostname}:${currentNode.walletAddress}`);
+
+// Debug logging utility
+async function debugLog(message, ...data) {
+  try {
+    await logger.log('dingo', message, data.length ? data : null);
+  } catch (error) {
+    console.error('Failed to write to debug log:', error);
+  }
+}
 
 const NETWORKS = JSON.parse(fs.readFileSync(`settings/networks.json`))
 const BLACKLIST = NETWORKS.blacklistedAddresses
@@ -14,6 +30,7 @@ const DINGO_COOKIE_PATH = TESTNET ? '~/.dingocoin/testnet1/.cookie'.replace('~',
 const DINGO_PORT = 34646;
 
 module.exports = {
+  debugLog,
   toSatoshi,
   fromSatoshi,
   walletPassphrase,
@@ -58,31 +75,45 @@ function getCookie() {
 }
 
 async function callRpc(method, params) {
-  const cookie = getCookie();
-  const options = {
-      url: "http://localhost:" + DINGO_PORT.toString(),
-      method: "post",
-      headers: { "content-type": "text/plain" },
-      auth: { user: cookie.user, pass: cookie.password },
-      body: JSON.stringify( {"jsonrpc": "1.0", "method": method, "params": params})
-  };
+  try {
+    await logger.log(`RPC Call - Method: ${method}, Params: ${JSON.stringify(params)}`);
+    const cookie = getCookie();
+    const options = {
+        url: "http://localhost:" + DINGO_PORT.toString(),
+        method: "post",
+        headers: { "content-type": "text/plain" },
+        auth: { user: cookie.user, pass: cookie.password },
+        body: JSON.stringify( {"jsonrpc": "1.0", "method": method, "params": params})
+    };
 
-  return new Promise((resolve, reject) => {
-    request(options, (err, resp, body) => {
-      if (err) {
-        return reject(err);
-      } else {
-        const r = JSON.parse(body
-          .replace(/"(amount|value)":\s*(\d+)\.((\d*?[1-9])0*),/g, '"$1":"$2\.$4",')
-          .replace(/"(amount|value)":\s*(\d+)\.0+,/g, '"$1":"$2",'));
-        if (r.error) {
-          reject(r.error.message);
-        } else {
-          resolve(r.result);
+    return new Promise((resolve, reject) => {
+      request(options, async (err, resp, body) => {
+        if (err) {
+          await logger.log(`RPC Error - Method: ${method}, Error: ${err.message}`);
+          reject(err);
+          return;
         }
-      }
+        
+        try {
+          const parsed = JSON.parse(body);
+          if (parsed.error) {
+            await logger.log(`RPC Error - Method: ${method}, Error: ${JSON.stringify(parsed.error)}`);
+            reject(parsed.error);
+            return;
+          }
+          
+          await logger.log(`RPC Success - Method: ${method}, Result: ${JSON.stringify(parsed.result)}`);
+          resolve(parsed.result);
+        } catch (parseError) {
+          await logger.log(`RPC Parse Error - Method: ${method}, Error: ${parseError.message}`);
+          reject(parseError);
+        }
+      });
     });
-  });
+  } catch (error) {
+    await logger.log(`RPC Critical Error - Method: ${method}, Error: ${error.message}`);
+    throw error;
+  }
 }
 
 async function verifyAddress(address) {

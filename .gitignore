@@ -8,3 +8,6 @@ settings2
 *.un~
 log.txt
 settings/private.DO_NOT_SHARE_THIS.json
+
+# MySQL credentials
+settings/mysql.credentials.json
