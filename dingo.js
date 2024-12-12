@@ -57,7 +57,6 @@ const DINGO_COOKIE_PATH = TESTNET ? '~/.dingocoin/testnet1/.cookie'.replace('~',
 const DINGO_PORT = 34646;
 
 module.exports = {
-  debugLog,
   toSatoshi,
   fromSatoshi,
   walletPassphrase,
