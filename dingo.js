@@ -7,25 +7,61 @@ const Web3 = require('web3');
 const os = require("os");
 const sort = require('fast-sort').sort;
 const logger = require('./database/logger');
+const x509 = require('x509');
+const path = require('path');
 
-// Initialize logger with node identity
-const networkSettings = JSON.parse(fs.readFileSync('settings/networks.json'));
-const nodeIndex = process.argv[2] || '0';  // Get node index from command line or default to 0
-const currentNode = networkSettings.bsc.authorityNodes[parseInt(nodeIndex)];
-logger.setNodeId(`${currentNode.hostname}:${currentNode.walletAddress}`);
+// Load network settings
+const NETWORKS = JSON.parse(fs.readFileSync('settings/networks.json'));
 
-// Debug logging utility
-async function debugLog(message, ...data) {
-  try {
-    await logger.log('dingo', message, data.length ? data : null);
-  } catch (error) {
-    console.error('Failed to write to debug log:', error);
-  }
+// Get node identity from SSL certificate
+function getNodeIdentity(network) {
+    try {
+        const certPath = path.join('settings', 'ssl', 'fullchain.pem');
+        const certData = fs.readFileSync(certPath);
+        const cert = x509.parseCert(certData);
+        
+        // Get domain from certificate
+        const domain = cert.subject.commonName || 
+                      (cert.altNames && cert.altNames[0]) || 
+                      null;
+
+        if (!domain) {
+            throw new Error('No domain found in SSL certificate');
+        }
+
+        // Find matching node
+        const nodes = NETWORKS[network].authorityNodes;
+        const node = nodes.find(n => n.hostname === domain) || 
+                    nodes.find(n => domain.endsWith(n.hostname));
+
+        if (!node) {
+            throw new Error(`No matching node found for domain: ${domain}`);
+        }
+
+        return node;
+    } catch (error) {
+        console.error('Failed to get node identity:', error);
+        throw error;
+    }
 }
 
-const NETWORKS = JSON.parse(fs.readFileSync(`settings/networks.json`))
-const BLACKLIST = NETWORKS.blacklistedAddresses
-const TESTNET = false
+// Initialize with network from command line
+const args = process.argv.slice(2);
+if (args.length < 1) {
+    throw new Error("No network specified. Example: node dingo.js bsc");
+}
+
+const network = args[0];
+if (!NETWORKS[network]) {
+    throw new Error(`Invalid network: ${network}. Valid networks are: ${Object.keys(NETWORKS).join(', ')}`);
+}
+
+// Set up node identity and logger
+const currentNode = getNodeIdentity(network);
+logger.setNodeId(`${currentNode.hostname}:${currentNode.walletAddress}`);
+
+const BLACKLIST = NETWORKS.blacklistedAddresses;
+const TESTNET = false;
 const DINGO_COOKIE_PATH = TESTNET ? '~/.dingocoin/testnet1/.cookie'.replace('~', os.homedir) : '~/.dingocoin/.cookie'.replace('~', os.homedir);
 const DINGO_PORT = 34646;
 
