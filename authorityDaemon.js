@@ -28,7 +28,7 @@ function getAuthorityLink(x) {
 const FLAT_FEE = BigInt(dingo.toSatoshi('10'));
 const DUST_THRESHOLD = BigInt(dingo.toSatoshi('1'));
 const PAYOUT_NETWORK_FEE_PER_TX = BigInt(dingo.toSatoshi('20')); // Add this to network fee for each deposit / withdrawal.
-let RECONFIGURING = false;
+let RECONFIGURING = true;
 
 function meetsTax(x) {
   return BigInt(x) >= FLAT_FEE;
