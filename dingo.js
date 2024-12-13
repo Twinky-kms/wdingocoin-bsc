@@ -12,30 +12,6 @@ const path = require('path');
 // Load network settings
 const NETWORKS = JSON.parse(fs.readFileSync('settings/networks.json'));
 
-// Get node identity from ssl.json configuration
-function getNodeIdentity(network) {
-    try {
-        const sslConfig = JSON.parse(fs.readFileSync('settings/ssl.json', 'utf8'));
-        
-        // Extract hostname from certPath
-        // Example path: /etc/letsencrypt/live/n4.dingocoin.org/fullchain.pem
-        const hostname = sslConfig.certPath.split('/').slice(-2)[0];
-
-        // Find matching node
-        const nodes = NETWORKS[network].authorityNodes;
-        const node = nodes.find(n => n.hostname === hostname);
-
-        if (!node) {
-            throw new Error(`No matching node found for hostname: ${hostname}`);
-        }
-
-        return node;
-    } catch (error) {
-        console.error('Failed to get node identity:', error);
-        throw error;
-    }
-}
-
 // Initialize with network from command line
 const args = process.argv.slice(2);
 if (args.length < 1) {
@@ -47,16 +23,15 @@ if (!NETWORKS[network]) {
     throw new Error(`Invalid network: ${network}. Valid networks are: ${Object.keys(NETWORKS).join(', ')}`);
 }
 
-// Set up node identity and logger
-const currentNode = getNodeIdentity(network);
-logger.setNodeId(`${currentNode.hostname}:${currentNode.walletAddress}`);
+// Logger will auto-initialize based on ssl.json and networks.json
+// No need to manually set the node ID anymore
 
 const BLACKLIST = NETWORKS.blacklistedAddresses;
 const TESTNET = false;
 const DINGO_COOKIE_PATH = TESTNET ? '~/.dingocoin/testnet1/.cookie'.replace('~', os.homedir) : '~/.dingocoin/.cookie'.replace('~', os.homedir);
 const DINGO_PORT = 34646;
 
-module.exports = {
+module.exports = {               
   toSatoshi,
   fromSatoshi,
   walletPassphrase,
