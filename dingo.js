@@ -12,12 +12,6 @@ const path = require('path');
 // Load network settings
 const NETWORKS = JSON.parse(fs.readFileSync('settings/networks.json'));
 
-// Initialize with network from command line
-const args = process.argv.slice(2);
-if (args.length < 1) {
-    throw new Error("No network specified. Example: node dingo.js bsc");
-}
-
 const network = args[0];
 if (!NETWORKS[network]) {
     throw new Error(`Invalid network: ${network}. Valid networks are: ${Object.keys(NETWORKS).join(', ')}`);
