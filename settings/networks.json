@@ -66,7 +66,7 @@
   },
   "polygon": {
     "provider": "https://polygon-rpc.com/",
-    "supportReconfiguration": false,
+    "supportReconfiguration": true,
     "configurationNonce": 0,
     "authorityThreshold": 3,
     "minBurnAmount": 1000000000,
@@ -76,27 +76,27 @@
       {
         "hostname": "mn1.dingocoin.com",
         "walletAddress": "0x72321c492EAA102C331C0EB64c9E4a72036f2f1d",
-        "newWalletAddress": "0x"
+        "newWalletAddress": "0x72321c492EAA102C331C0EB64c9E4a72036f2f1d"
       },
       {
         "hostname": "wdingo.triplezen.org",
         "walletAddress": "0x90c5951c839de0CC80138D7A47a3F1F0eE5828Ba",
-        "newWalletAddress": "0x"
+        "newWalletAddress": "0x90c5951c839de0CC80138D7A47a3F1F0eE5828Ba"
       },
       {
         "hostname": "wdingomatic.mysterious-beard-tackles.com",
         "walletAddress": "0xcceA32dDbd0b8c56904ED5Cf6Bed0260a753b90a",
-        "newWalletAddress": "0x"
+        "newWalletAddress": "0xcceA32dDbd0b8c56904ED5Cf6Bed0260a753b90a"
       },
       {
         "hostname": "mn2.dingocoin.com",
         "walletAddress": "0xfA3ba79a0266Fd0354547E4807b19bC8Cef0696C",
-        "newWalletAddress": "0x"
+        "newWalletAddress": "0xfA3ba79a0266Fd0354547E4807b19bC8Cef0696C"
       },
       {
         "hostname": "mn3.dingocoin.com",
         "walletAddress": "0x171922Ad1C671AaAB08A2EEFDf1F92cDB78cA6b4",
-        "newWalletAddress": "0x"
+        "newWalletAddress": "0xDD67CeAA42224808eEC2eb8A0f4D57DD3fe9fa4C"
       }
     ],
     "chainId": 137,
