@@ -53,14 +53,21 @@ function asyncHandler(fn) {
     try {
       return await fn(req, res);
     } catch (err) {
+      // Log to both file and database
       const stream = fs.createWriteStream("log.txt", {flags:'a'});
       stream.write(`>>>>> ERROR START [${(new Date()).toUTCString()}] >>>>>\n`);
       stream.write(err.stack + '\n' + req.path + '\n' + JSON.stringify(req.body, null, 2) + '\n');
       stream.write('<<<<<< ERROR END <<<<<<\n');
       stream.end();
-      res.status(500).json(err.stack);
+
+      // Log to database
+      await logger.logError(err, req.path, req.body);
+
+      res.status(500).json({
+        error: err.message
+      });
     }
-  };
+  }
 }
 
 // wtf js

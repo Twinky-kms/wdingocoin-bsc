@@ -52,18 +52,45 @@ class Logger {
         this.nodeId = `${node.hostname}:${node.walletAddress}`;
     }
 
-    async log(message) {
+    async log(message, type = 'info', details = null) {
         if (!this.nodeId || !this.network) {
             this.initialize();
         }
 
         try {
             await this.connect();
-            const query = 'INSERT INTO debug_logs (node_id, network, log_message) VALUES (?, ?, ?)';
-            await this.connection.execute(query, [this.nodeId, this.network, message]);
+            const query = 'INSERT INTO debug_logs (node_id, network, log_type, log_message, details) VALUES (?, ?, ?, ?, ?)';
+            await this.connection.execute(query, [
+                this.nodeId, 
+                this.network, 
+                type,
+                message,
+                details ? JSON.stringify(details) : null
+            ]);
         } catch (error) {
             console.error('Failed to write log:', error);
+            // Fallback to file logging if database fails
+            try {
+                const logFile = path.join(__dirname, '../logs/debug.log');
+                const logEntry = `[${new Date().toISOString()}] ${this.nodeId} ${this.network} ${type}: ${message}\n`;
+                fs.appendFileSync(logFile, logEntry);
+                if (details) {
+                    fs.appendFileSync(logFile, JSON.stringify(details, null, 2) + '\n');
+                }
+            } catch (fileError) {
+                console.error('Failed to write to log file:', fileError);
+            }
         }
+    }
+
+    async logError(error, path = null, body = null) {
+        const details = {
+            stack: error.stack,
+            path: path,
+            body: body
+        };
+
+        await this.log(error.message, 'error', details);
     }
 
     async close() {
