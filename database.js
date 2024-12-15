@@ -3,6 +3,7 @@
 const childProcess = require('child_process');
 const sqlite3 = require('sqlite3')
 const util = require('util');
+const mysqlLogger = require('./database/mysql_logger');
 
 let db = null;
 let dbLock = null;
@@ -44,8 +45,10 @@ async function reset(path, sql) {
   child.stdin.end();
 }
 
-function load(path) {
+async function load(path) {
   db = new sqlite3.Database(path);
+  // Initialize MySQL connection
+  await mysqlLogger.connect();
 }
 
 async function hasUsedDepositAddresses(depositAddresses) {
@@ -59,15 +62,19 @@ async function registerUsedDepositAddresses(depositAddresses) {
   const statement = db.prepare('INSERT INTO usedDepositAddresses (address) VALUES (?)');
   for (const depositAddress of depositAddresses) {
     await util.promisify(statement.run.bind(statement))([depositAddress]);
+    // Log to MySQL
+    await mysqlLogger.logUsedDepositAddress(depositAddress);
   }
   statement.finalize();
 }
 
-function registerMintDepositAddress(mintAddress, depositAddress, redeemScript) {
-  return util.promisify(db.run.bind(db))(
+async function registerMintDepositAddress(mintAddress, depositAddress, redeemScript) {
+  await util.promisify(db.run.bind(db))(
     'INSERT INTO mintDepositAddresses (mintAddress, depositAddress, redeemScript) VALUES (?, ?, ?)',
     [mintAddress, depositAddress, redeemScript]
   );
+  // Log to MySQL
+  await mysqlLogger.logMintDepositAddress(mintAddress, depositAddress, redeemScript);
 }
 
 async function getMintDepositAddress(mintAddress) {
@@ -84,14 +91,14 @@ async function getMintDepositAddress(mintAddress) {
   return results[0].depositAddress;
 }
 
-function getMintDepositAddresses(filterDepositAddresses) {
+async function getMintDepositAddresses(filterDepositAddresses) {
   if (filterDepositAddresses !== null && filterDepositAddresses !== undefined) {
-    return util.promisify(db.all.bind(db))(
+    return await util.promisify(db.all.bind(db))(
       `SELECT mintAddress, depositAddress, approvedTax FROM mintDepositAddresses WHERE depositAddress IN (${filterDepositAddresses.map(x => '?')})`,
       filterDepositAddresses
     );
   } else {
-    return util.promisify(db.all.bind(db))(`SELECT mintAddress, depositAddress, approvedTax FROM mintDepositAddresses`);
+    return await util.promisify(db.all.bind(db))(`SELECT mintAddress, depositAddress, approvedTax FROM mintDepositAddresses`);
   }
 }
 
@@ -100,15 +107,19 @@ async function updateMintDepositAddresses(mintDepositAddresses) {
   const stmt = db.prepare(`UPDATE mintDepositAddresses SET approvedTax=? WHERE depositAddress=?`);
   for (const a of mintDepositAddresses) {
     await stmt.run(a.approvedTax, a.depositAddress);
+    // Log to MySQL
+    await mysqlLogger.updateMintDepositAddress(a.depositAddress, a.approvedTax);
   }
   stmt.finalize();
 }
 
-function registerWithdrawal(burnAddress, burnIndex) {
-  return util.promisify(db.run.bind(db))(
+async function registerWithdrawal(burnAddress, burnIndex) {
+  await util.promisify(db.run.bind(db))(
     'INSERT INTO withdrawals (burnAddress, burnIndex) VALUES (?, ?)',
     [burnAddress, burnIndex]
   );
+  // Log to MySQL
+  await mysqlLogger.logWithdrawal(burnAddress, burnIndex);
 }
 
 async function getWithdrawal(burnAddress, burnIndex) {
@@ -125,14 +136,14 @@ async function getWithdrawal(burnAddress, burnIndex) {
   return result[0];
 }
 
-function getWithdrawals() {
-  return util.promisify(db.all.bind(db))(
+async function getWithdrawals() {
+  return await util.promisify(db.all.bind(db))(
     `SELECT burnAddress, burnIndex, approvedAmount, approvedTax FROM withdrawals`
   );
 }
 
-function getUnapprovedWithdrawals() {
-  return util.promisify(db.all.bind(db))(
+async function getUnapprovedWithdrawals() {
+  return await util.promisify(db.all.bind(db))(
     `SELECT burnAddress, burnIndex, approvedAmount, approvedTax FROM withdrawals WHERE approvedTax="0"`
   );
 }
@@ -141,6 +152,8 @@ async function updateWithdrawals(withdrawals) {
   const stmt = db.prepare(`UPDATE withdrawals SET approvedAmount=?, approvedTax=? WHERE burnAddress=? AND burnIndex=?`);
   for (const w of withdrawals) {
     await stmt.run(w.approvedAmount, w.approvedTax, w.burnAddress, w.burnIndex);
+    // Log to MySQL
+    await mysqlLogger.updateWithdrawal(w.burnAddress, w.burnIndex, w.approvedAmount, w.approvedTax);
   }
   stmt.finalize();
 }
