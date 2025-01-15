@@ -15,6 +15,7 @@ module.exports = {
 
   hasUsedDepositAddresses,
   registerUsedDepositAddresses,
+  getAllUsedDepositAddresses,
 
   registerMintDepositAddress,
   getMintDepositAddress,
@@ -66,6 +67,10 @@ async function registerUsedDepositAddresses(depositAddresses) {
     await mysqlLogger.logUsedDepositAddress(depositAddress);
   }
   statement.finalize();
+}
+
+async function getAllUsedDepositAddresses() {
+  return (await util.promisify(db.all.bind(db))('SELECT address FROM usedDepositAddresses')).map(row => row.address);
 }
 
 async function registerMintDepositAddress(mintAddress, depositAddress, redeemScript) {

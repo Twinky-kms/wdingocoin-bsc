@@ -137,6 +137,7 @@ function parseBool(s) {
     consensus: consensus,
     log: log,
     syncDatabase: syncDatabase,
+    syncRemoteMySQL: syncRemoteMySQL,
     dingoDoesAHarakiri: dingoDoesAHarakiri
   };
 
@@ -171,7 +172,8 @@ Available commands:
 
   ${chalk.bold('consensus')}: Retrieves the state of all nodes and checks the consensus of state.
   ${chalk.bold('log <nodeIndex>')}: ${chalk.bold.red('[AUTHORITY ONLY]')} Retrieves the log from node <nodeIndex>.
-  ${chalk.bold('syncDatabase <nodeIndex>')}: ${chalk.bold.red('[AUTHORITY ONLY]')} Replaces the local database with that downloaded from node <nodeIndex>.
+  ${chalk.bold('syncDatabase <nodeIndex>')}: ${chalk.bold.red('[AUTHORITY ONLY]')} Replaces the local SQLite database with that downloaded from node <nodeIndex>.
+  ${chalk.bold('syncRemoteMySQL')}: ${chalk.bold.red('[AUTHORITY ONLY]')} Synchronizes the remote MySQL database with local SQLite data.
   ${chalk.bold('dingoDoesAHarakiri <nodeIndex>')}: ${chalk.bold.red('[AUTHORITY ONLY]')} Sends a suicide signal to node <nodeIndex>.
   ${chalk.bold('dingoDoesAHarakiri')}: ${chalk.bold.red('[AUTHORITY ONLY]')} Sends a suicide signal to all nodes.
 `);
@@ -932,6 +934,92 @@ Available commands:
     }
   }
 
+  async function syncRemoteMySQL() {
+    console.log(chalk.bold('Synchronizing remote MySQL database with local SQLite data...'));
 
+    // Get all local data
+    console.log('Fetching local SQLite data...');
+    const localMintDeposits = await database.getMintDepositAddresses();
+    const localWithdrawals = await database.getWithdrawals();
+    const localUsedAddresses = await database.getAllUsedDepositAddresses();
+
+    // Initialize MySQL logger
+    const mysqlLogger = require('./database/mysql_logger');
+    await mysqlLogger.connect();
+    
+    if (!mysqlLogger.isConnected) {
+      console.log(chalk.red.bold('Failed to connect to remote MySQL database. Check your credentials and connection.'));
+      return;
+    }
+
+    console.log('Connected to remote MySQL database.');
+    mysqlLogger.initialize();
+
+    // Sync mint deposit addresses
+    console.log('\nSyncing mint deposit addresses to MySQL...');
+    let mintDepositSuccess = 0;
+    let mintDepositFailed = 0;
+    for (const deposit of localMintDeposits) {
+      try {
+        await mysqlLogger.logMintDepositAddress(
+          deposit.mintAddress,
+          deposit.depositAddress,
+          deposit.redeemScript,
+          deposit.approvedTax
+        );
+        process.stdout.write('.');
+        mintDepositSuccess++;
+      } catch (error) {
+        process.stdout.write('x');
+        console.error(`\nFailed to sync mint deposit address ${deposit.mintAddress}:`, error.message);
+        mintDepositFailed++;
+      }
+    }
+
+    // Sync withdrawals
+    console.log('\n\nSyncing withdrawals to MySQL...');
+    let withdrawalSuccess = 0;
+    let withdrawalFailed = 0;
+    for (const withdrawal of localWithdrawals) {
+      try {
+        await mysqlLogger.logWithdrawal(
+          withdrawal.burnAddress,
+          withdrawal.burnIndex,
+          withdrawal.approvedAmount,
+          withdrawal.approvedTax
+        );
+        process.stdout.write('.');
+        withdrawalSuccess++;
+      } catch (error) {
+        process.stdout.write('x');
+        console.error(`\nFailed to sync withdrawal ${withdrawal.burnAddress}:${withdrawal.burnIndex}:`, error.message);
+        withdrawalFailed++;
+      }
+    }
+
+    // Sync used deposit addresses
+    console.log('\n\nSyncing used deposit addresses to MySQL...');
+    let addressSuccess = 0;
+    let addressFailed = 0;
+    for (const address of localUsedAddresses) {
+      try {
+        await mysqlLogger.logUsedDepositAddress(address);
+        process.stdout.write('.');
+        addressSuccess++;
+      } catch (error) {
+        process.stdout.write('x');
+        console.error(`\nFailed to sync used deposit address ${address}:`, error.message);
+        addressFailed++;
+      }
+    }
+
+    await mysqlLogger.close();
+    console.log('\n\nMySQL Synchronization Summary:');
+    console.log('--------------------------------');
+    console.log(`Mint Deposit Addresses: ${mintDepositSuccess} succeeded, ${mintDepositFailed} failed`);
+    console.log(`Withdrawals: ${withdrawalSuccess} succeeded, ${withdrawalFailed} failed`);
+    console.log(`Used Addresses: ${addressSuccess} succeeded, ${addressFailed} failed`);
+    console.log('\nMySQL synchronization completed.');
+  }
 
 })();
